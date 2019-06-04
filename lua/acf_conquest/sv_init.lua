@@ -57,7 +57,7 @@ local function SaveUserTable(Forced)
 
 	print("[ACF Conquest] Saving user data.")
 
-	file.Write(UserFile, util.TableToJSON(UserData))
+	file.Write(UserFile, util.TableToJSON(UserData, true))
 end
 
 local function InitializeMaps()

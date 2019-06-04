@@ -9,14 +9,14 @@ local ACF_USER_Meta = {
 local function SetKillDeathRatio(User)
 	local Ratio = User._kills / User._deaths
 
-	User._kdr = Ratio ~= Ratio and 0 or Ratio
+	User._kdr = User._deaths ~= 0 and Ratio or 0
 end
 
 local function SetWinrate(User)
 	local Games = User._victories + User._defeats
 	local Winrate = User._victories / Games
 
-	User._winrate = Winrate ~= Winrate and 0 or Winrate
+	User._winrate = Games ~= 0 and Winrate or 0
 	User._games = Games
 end
 
