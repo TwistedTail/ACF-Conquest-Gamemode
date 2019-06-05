@@ -88,6 +88,7 @@ local Options = {
 	},
 	{
 		name = "Server Settings",
+		superonly = true,
 		data = {
 			{
 				name = "Global Settings",
@@ -104,6 +105,7 @@ local Options = {
 	},
 	{
 		name = "Team Settings",
+		superonly = true,
 		data = {
 			{
 				name = "View Teams",
@@ -119,6 +121,7 @@ local Options = {
 	},
 	{
 		name = "Capture Points",
+		superonly = true,
 		data = {
 			{
 				name = "View Capture Points",
@@ -139,6 +142,7 @@ local Options = {
 	},
 	{
 		name = "Spawn Points",
+		superonly = true,
 		data = {
 			{
 				name = "View Spawn Points",
@@ -154,6 +158,48 @@ local Options = {
 	},
 }
 
-ACF_Conq.MenuOptions = Options
+local function GenerateMenu(ComboBox, Player)
+	local IsSuper = Player:IsSuperAdmin()
+
+	for _, v in pairs(Options) do
+		if not v.superonly or v.superonly and IsSuper then
+			ComboBox:AddChoice(v.name, v.data)
+		end
+	end
+
+	ComboBox:ChooseOptionID(1)
+end
+
+local function GenerateTree(Tree, Category, Player)
+	local Count = 0.5
+
+	Tree:Clear()
+	Tree:SelectNone()
+
+	if next(Category) then
+		local IsSuper = Player:IsSuperAdmin()
+		local First
+
+		for _, v in pairs(Category) do
+			if not v.superonly or v.superonly and IsSuper then
+				local Node = Tree:AddNode(v.name, v.icon)
+
+				Node.Action = v.action
+
+				Count = Count + 1
+
+				if not First then
+					First = true
+					Tree:SetSelectedItem(Node)
+				end
+			end
+		end
+	end
+
+	Tree:SetHeight(Tree:GetLineHeight() * Count)
+end
+
 ACF_Conq.CreateItem = CreateItem
 ACF_Conq.ClearItems = ClearItems
+ACF_Conq.GenerateMenu = GenerateMenu
+ACF_Conq.GenerateTree = GenerateTree

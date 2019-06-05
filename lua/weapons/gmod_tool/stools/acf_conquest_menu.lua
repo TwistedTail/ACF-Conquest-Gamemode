@@ -6,30 +6,24 @@ if CLIENT then
 	language.Add("Tool.acf_conquest_menu.desc", "Does nothing.")
 	language.Add("Tool.acf_conquest_menu.0", "Left click: Nothing. Right click: Also nothing.")
 
-	local MenuOptions = ACF_Conq.MenuOptions
 	local CreateItem = ACF_Conq.CreateItem
 	local ClearItems = ACF_Conq.ClearItems
-	local Category
-	local Option
+	local GenerateMenu = ACF_Conq.GenerateMenu
+	local GenerateTree = ACF_Conq.GenerateTree
 
 	local function CreateContextPanel(Panel)
-		local ShowMenu = LocalPlayer():IsSuperAdmin()
+		local LocalPly = LocalPlayer()
+		local Category
+		local Option
 
 		Panel:Dock(FILL)
 
 		ClearItems(Panel, "Items")
 
-		if not ShowMenu then
-			local ErrorText = CreateItem("DLabel", Panel, true)
-			ErrorText:SetText("Error! You don't have enough priviledges to use this tool. Make sure you're a superadmin.")
-
-			local Reload = CreateItem("DButton", Panel, true)
-			Reload:SetText("Press to reload menu.")
-			Reload.DoClick = function()
-				CreateContextPanel(Panel)
-			end
-
-			return
+		local Reload = CreateItem("DButton", Panel, true)
+		Reload:SetText("Press to reload menu.")
+		Reload.DoClick = function()
+			CreateContextPanel(Panel)
 		end
 
 		local Title = CreateItem("DLabel", Panel, true)
@@ -37,10 +31,6 @@ if CLIENT then
 
 		local Options = CreateItem("DComboBox", Panel, true)
 		Options:SetSortItems(false)
-
-		for _, v in pairs(MenuOptions) do
-			Options:AddChoice(v.name, v.data)
-		end
 
 		local Tree = CreateItem("DTree", Panel)
 		Tree.OnNodeSelected = function(_, Node)
@@ -60,27 +50,12 @@ if CLIENT then
 
 			Category = Data
 
-			Tree:Clear()
-			Tree:SelectNone()
-
 			ClearItems(Panel, "TempItems")
 
-			Tree:SetHeight(Tree:GetLineHeight() * (#Category + 0.5))
-
-			if next(Category) then
-				for k, v in pairs(Category) do
-					local Node = Tree:AddNode(v.name, v.icon)
-
-					Node.Action = v.action
-
-					if k == 1 then
-						Tree:SetSelectedItem(Node)
-					end
-				end
-			end
+			GenerateTree(Tree, Category, LocalPly)
 		end
 
-		Options:ChooseOptionID(1) -- Must be done after defining OnSelect
+		GenerateMenu(Options, LocalPly)
 	end
 
 	TOOL.BuildCPanel = CreateContextPanel
