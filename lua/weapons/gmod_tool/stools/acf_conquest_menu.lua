@@ -12,7 +12,6 @@ if CLIENT then
 	local GenerateTree = ACF_Conq.GenerateTree
 
 	local function CreateContextPanel(Panel)
-		local LocalPly = LocalPlayer()
 		local Category
 		local Option
 
@@ -52,10 +51,10 @@ if CLIENT then
 
 			ClearItems(Panel, "TempItems")
 
-			GenerateTree(Tree, Category, LocalPly)
+			GenerateTree(Tree, Category)
 		end
 
-		GenerateMenu(Options, LocalPly)
+		GenerateMenu(Options)
 	end
 
 	TOOL.BuildCPanel = CreateContextPanel

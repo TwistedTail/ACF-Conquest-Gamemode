@@ -158,8 +158,8 @@ local Options = {
 	},
 }
 
-local function GenerateMenu(ComboBox, Player)
-	local IsSuper = Player:IsSuperAdmin()
+local function GenerateMenu(ComboBox)
+	local IsSuper = LocalPlayer():IsSuperAdmin()
 
 	for _, v in pairs(Options) do
 		if not v.superonly or v.superonly and IsSuper then
@@ -170,14 +170,14 @@ local function GenerateMenu(ComboBox, Player)
 	ComboBox:ChooseOptionID(1)
 end
 
-local function GenerateTree(Tree, Category, Player)
+local function GenerateTree(Tree, Category)
 	local Count = 0.5
 
 	Tree:Clear()
 	Tree:SelectNone()
 
 	if next(Category) then
-		local IsSuper = Player:IsSuperAdmin()
+		local IsSuper = LocalPlayer():IsSuperAdmin()
 		local First
 
 		for _, v in pairs(Category) do
