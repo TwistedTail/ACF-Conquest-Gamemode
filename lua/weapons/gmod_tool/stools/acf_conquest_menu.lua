@@ -8,34 +8,26 @@ if CLIENT then
 
 	local MenuOptions = ACF_Conq.MenuOptions
 	local CreateItem = ACF_Conq.CreateItem
-	local MainPanel
+	local ClearItems = ACF_Conq.ClearItems
 	local Category
 	local Option
 
 	local function CreateContextPanel(Panel)
 		local ShowMenu = LocalPlayer():IsSuperAdmin()
 
-		Panel = Panel or MainPanel
-		MainPanel = Panel
-		MainPanel.TempItems = {}
-
-		if next(Panel.Items) then
-			for Item in pairs(Panel.Items) do
-				Item:Remove()
-			end
-		end
-
 		Panel:Dock(FILL)
+
+		ClearItems(Panel, "Items")
 
 		if not ShowMenu then
 			local ErrorText = CreateItem("DLabel", Panel, true)
-				ErrorText:SetText("Error! You don't have enough priviledges to use this tool. Make sure you're a superadmin.")
+			ErrorText:SetText("Error! You don't have enough priviledges to use this tool. Make sure you're a superadmin.")
 
 			local Reload = CreateItem("DButton", Panel, true)
-				Reload:SetText("Press to reload menu.")
-				Reload.DoClick = function()
-					CreateContextPanel(Panel)
-				end
+			Reload:SetText("Press to reload menu.")
+			Reload.DoClick = function()
+				CreateContextPanel(Panel)
+			end
 
 			return
 		end
@@ -56,14 +48,10 @@ if CLIENT then
 
 			Option = Node
 
-			if next(MainPanel.TempItems) then
-				for Item in pairs(MainPanel.TempItems) do
-					Item:Remove()
-				end
-			end
+			ClearItems(Panel, "TempItems")
 
 			if Option.Action then
-				Option.Action(MainPanel)
+				Option.Action(Panel)
 			end
 		end
 
@@ -75,11 +63,7 @@ if CLIENT then
 			Tree:Clear()
 			Tree:SelectNone()
 
-			if next(MainPanel.TempItems) then
-				for Item in pairs(MainPanel.TempItems) do
-					Item:Remove()
-				end
-			end
+			ClearItems(Panel, "TempItems")
 
 			Tree:SetHeight(Tree:GetLineHeight() * (#Category + 0.5))
 

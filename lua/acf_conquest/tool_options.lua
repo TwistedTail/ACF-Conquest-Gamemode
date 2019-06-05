@@ -25,6 +25,17 @@ local function CreateTempItem(Name, Parent, HasText)
 	return Control
 end
 
+local function ClearItems(Control, Name)
+	local Items = Control[Name]
+
+	if not Items then Control[Name] = {} return end
+	if not next(Items) then return end
+
+	for Item in pairs(Items) do
+		Item:Remove()
+	end
+end
+
 local function WIPText(Panel)
 	local Text = CreateTempItem("DLabel", Panel, true)
 	Text:SetText("Work in Progress.")
@@ -145,3 +156,4 @@ local Options = {
 
 ACF_Conq.MenuOptions = Options
 ACF_Conq.CreateItem = CreateItem
+ACF_Conq.ClearItems = ClearItems
