@@ -6,8 +6,8 @@ local FormPanels = {
 	ControlHelp = { "" },
 	Help = { "" },
 	ListBox = { "" },
-	NumberWang = { "", "", 0, 0 },
-	NumSlider = { "", "", 0, 0 },
+	NumberWang = { "", "", 0, 0, 0 },
+	NumSlider = { "", "", 0, 0, 0 },
 	PanelSelect = { },
 	TextEntry = { "", "" }
 }
@@ -133,13 +133,19 @@ local OptionsTable = {
 								"IT'S UNRELIABLE LADIES AND GENTS! UN-FUCKING-RELIABLE " ..
 								"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
-					local Enable = CreateTempItem("CheckBox", Panel, true)
-					Enable:SetText("Enable/disable the gamemode.")
-					Enable:SetConVar("acf_conquest_enable")
+					local GMEnable = CreateTempItem("CheckBox", Panel, true)
+					GMEnable:SetText("Enable the gamemode.")
+					GMEnable:SetConVar("acf_conquest_enable")
 
-					local Bots = CreateTempItem("CheckBox", Panel, true)
-					Bots:SetText("Enable/disable bots.")
-					Bots:SetConVar("acf_conquest_enable_bots")
+					local BotEnable = CreateTempItem("CheckBox", Panel, true)
+					BotEnable:SetText("Enable bot spawning.")
+					BotEnable:SetConVar("acf_conquest_enable_bots")
+
+					local BotAmount = CreateTempItem("NumSlider", Panel)
+					BotAmount:SetTooltip("Defines the maximum amount of bots per team.")
+					BotAmount:SetText("Bots per team")
+					BotAmount:SetMax(100)
+					BotAmount:SetConVar("acf_conquest_max_bots")
 				end
 			},
 			{

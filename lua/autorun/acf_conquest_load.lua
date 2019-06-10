@@ -10,8 +10,9 @@ if SERVER then
 	include("acf_conquest/points.lua")
 	include("acf_conquest/sv_init.lua")
 
-	CreateConVar("acf_conquest_enable", "1", FCVAR_ARCHIVE, "Enable/disable the ACF Conquest Gamemode.")
-	CreateConVar("acf_conquest_enable_bots", "1", FCVAR_ARCHIVE, "Enable/disable bot spawning.")
+	CreateConVar("acf_conquest_enable", "1", FCVAR_ARCHIVE, "Enables the ACF Conquest Gamemode.")
+	CreateConVar("acf_conquest_enable_bots", "1", FCVAR_ARCHIVE, "Enables bot spawning.")
+	CreateConVar("acf_conquest_max_bots", "15", FCVAR_ARCHIVE, "Defines the maximum amount of bots per team.")
 end
 
 if CLIENT then

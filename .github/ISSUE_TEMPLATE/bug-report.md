@@ -19,5 +19,5 @@ If you're able to reproduce the bug, please provide a step-by-step explanation.
 **Screenshots (Optional)**
 If applicable, add screenshots to help explain your problem.
 
-**Additional Information**
+**Additional Information (Optional)**
 Add any other information about the problem here.
