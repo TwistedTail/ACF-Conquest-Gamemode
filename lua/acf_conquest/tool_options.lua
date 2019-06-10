@@ -98,7 +98,7 @@ local OptionsTable = {
 					local GitButton = CreateTempItem("Button", Panel, true)
 					GitButton:SetText("Report a Bug Now!")
 					GitButton.DoClick = function()
-						gui.OpenURL("https://github.com/TwistedTail/ACF-Conquest-Gamemode/issues")
+						gui.OpenURL("https://github.com/TwistedTail/ACF-Conquest-Gamemode/issues/new/choose")
 					end
 
 					local Note = CreateTempItem("Help", Panel, true)
