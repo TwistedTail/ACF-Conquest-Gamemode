@@ -13,6 +13,7 @@ if SERVER then
 	CreateConVar("acf_conquest_enable", "1", FCVAR_ARCHIVE, "Enables the ACF Conquest Gamemode.")
 	CreateConVar("acf_conquest_enable_bots", "1", FCVAR_ARCHIVE, "Enables bot spawning.")
 	CreateConVar("acf_conquest_max_bots", "15", FCVAR_ARCHIVE, "Defines the maximum amount of bots per team.")
+	CreateConVar("acf_conquest_max_tickets", "500", FCVAR_ARCHIVE, "Defines the amount of tickets each team starts with.")
 end
 
 if CLIENT then

@@ -7,7 +7,6 @@ if SERVER then
 
 	net.Receive("ACF Conquest Operation", function(_, Player)
 		if not IsValid(Player) then return end
-		if not Player:IsPlayer() then return end
 		if not Player:IsSuperAdmin() then return end
 		if Player:GetTool().Mode ~= "acf_conquest_menu" then return end
 
@@ -18,7 +17,6 @@ if SERVER then
 
 	net.Receive("ACF Conquest Stage", function(_, Player)
 		if not IsValid(Player) then return end
-		if not Player:IsPlayer() then return end
 		if not Player:IsSuperAdmin() then return end
 		if Player:GetTool().Mode ~= "acf_conquest_menu" then return end
 

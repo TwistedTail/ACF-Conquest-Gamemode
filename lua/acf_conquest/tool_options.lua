@@ -146,6 +146,12 @@ local OptionsTable = {
 					BotAmount:SetText("Bots per team")
 					BotAmount:SetMax(100)
 					BotAmount:SetConVar("acf_conquest_max_bots")
+
+					local ScoreAmount = CreateTempItem("NumSlider", Panel)
+					ScoreAmount:SetTooltip("Defines the amount of tickets each team starts with.")
+					ScoreAmount:SetText("Tickets per team")
+					ScoreAmount:SetMinMax(100, 2000)
+					ScoreAmount:SetConVar("acf_conquest_max_tickets")
 				end
 			},
 			{
