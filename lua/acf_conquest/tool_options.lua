@@ -242,12 +242,6 @@ AddOption("Tutorials")
 
 AddOption("Server Settings", true)
 AddOptionItem("Global Settings", "icon16/world.png", nil, function(Panel)
-	local Test = CreateTempItem("Help", Panel, true)
-	Test:SetText("It's not a soldier's gun (Not a soldier's gun!). " ..
-				"Tight tolerances? Full length guide rod? UNRELIABLE!? " ..
-				"IT'S UNRELIABLE LADIES AND GENTS! UN-FUCKING-RELIABLE " ..
-				"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-
 	local GMEnable = CreateTempItem("CheckBox", Panel, true)
 	GMEnable:SetText("Enable the gamemode.")
 	GMEnable:SetConVar("acf_conquest_enable")
@@ -267,6 +261,12 @@ AddOptionItem("Global Settings", "icon16/world.png", nil, function(Panel)
 	ScoreAmount:SetText("Tickets per team")
 	ScoreAmount:SetMinMax(100, 2000)
 	ScoreAmount:SetConVar("acf_conquest_max_tickets")
+
+	local MinPlayers = CreateTempItem("NumSlider", Panel)
+	MinPlayers:SetTooltip("Defines the minimal amount of players needed to start a game.")
+	MinPlayers:SetText("Minimum players")
+	MinPlayers:SetMinMax(1, 30)
+	MinPlayers:SetConVar("acf_conquest_min_players")
 end)
 AddOptionItem("Map Settings", "icon16/map.png", nil, WIPText)
 
