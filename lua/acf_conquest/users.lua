@@ -20,65 +20,20 @@ local function SetWinrate(User)
 	User._games = Games
 end
 
--- User getters
-do
-	function ACF_USER:GetSteamID()
-		return self._steamid
-	end
+-- User Get/Set methods
+ACF_Conq.CreateAccessor(ACF_USER, "_steamid", "SteamID", ACSR_GET)
+ACF_Conq.CreateAccessor(ACF_USER, "_balance", "Balance", ACSR_GET)
+ACF_Conq.CreateAccessor(ACF_USER, "_lastseen", "LastSeen", ACSR_GETSET)
+ACF_Conq.CreateAccessor(ACF_USER, "_team", "Team", ACSR_GETSET)
+ACF_Conq.CreateAccessor(ACF_USER, "_kills", "Kills", ACSR_GET)
+ACF_Conq.CreateAccessor(ACF_USER, "_deaths", "Deaths", ACSR_GET)
+ACF_Conq.CreateAccessor(ACF_USER, "_kdr", "KillDeathRatio", ACSR_GET)
+ACF_Conq.CreateAccessor(ACF_USER, "_victories", "Victories", ACSR_GET)
+ACF_Conq.CreateAccessor(ACF_USER, "_victories", "Defeats", ACSR_GET)
+ACF_Conq.CreateAccessor(ACF_USER, "_games", "TotalGames", ACSR_GET)
+ACF_Conq.CreateAccessor(ACF_USER, "_winrate", "Winrate", ACSR_GET)
 
-	function ACF_USER:GetBalance()
-		return self._balance
-	end
-
-	function ACF_USER:GetLastSeen()
-		return self._lastseen
-	end
-
-	function ACF_USER:GetTeam()
-		return self._team
-	end
-
-	function ACF_USER:GetKills()
-		return self._kills
-	end
-
-	function ACF_USER:GetDeaths()
-		return self._deaths
-	end
-
-	function ACF_USER:GetKillDeathRatio()
-		return self._kdr
-	end
-
-	function ACF_USER:GetVictories()
-		return self._victories
-	end
-
-	function ACF_USER:GetDefeats()
-		return self._defeats
-	end
-
-	function ACF_USER:GetTotalGames()
-		return self._games
-	end
-
-	function ACF_USER:GetWinrate()
-		return self._winrate
-	end
-end
-
--- User setters
-do
-	function ACF_USER:SetLastSeen(Value)
-		self._lastseen = Value
-	end
-
-	function ACF_USER:SetTeam(Value)
-		self._team = Value
-	end
-end
-
--- Add functions
+-- User Add functions
 do
 	function ACF_USER:AddBalance(Value)
 		self._balance = self._balance + Value
@@ -105,7 +60,7 @@ do
 	end
 end
 
--- ToTable method
+-- User ToTable method
 function ACF_USER:ToTable()
 	local Result = {}
 

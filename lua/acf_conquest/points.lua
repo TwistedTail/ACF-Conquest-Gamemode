@@ -5,37 +5,12 @@ local ACF_POINT_Meta = {
 	__call = function( _, ... ) return ACF_NewCapturePoint( ... ) end
 }
 
--- Capture Point getters
-do
-	function ACF_POINT:GetName()
-		return self._name
-	end
+-- Capture Point Get/Set methods
+ACF_Conq.CreateAccessor(ACF_POINT, "_name", "Name", ACSR_GETSET)
+ACF_Conq.CreateAccessor(ACF_POINT, "_pos", "Pos", ACSR_GETSET)
+ACF_Conq.CreateAccessor(ACF_POINT, "_model", "Model", ACSR_GETSET)
 
-	function ACF_POINT:GetPos()
-		return self._pos
-	end
-
-	function ACF_POINT:GetModel()
-		return self._model
-	end
-end
-
--- Capture Point setters
-do
-	function ACF_POINT:SetName(Value)
-		self._name = Value
-	end
-
-	function ACF_POINT:SetPos(Value)
-		self._pos = Value
-	end
-
-	function ACF_POINT:SetModel(Value)
-		self._model = Value
-	end
-end
-
--- ToTable method
+-- Capture Point ToTable method
 function ACF_POINT:ToTable()
 	local Result = {}
 
