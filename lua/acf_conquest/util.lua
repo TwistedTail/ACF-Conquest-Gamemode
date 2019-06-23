@@ -14,7 +14,7 @@ local function CreateAccessor(Table, Key, Name, Type)
 		end
 	end
 
-	if bit.band("010", Binary) == 2 then
+	if bit.band("010", Binary) == 10 then
 		Table["Set" .. Name] = function(This, Value)
 			This[Key] = Value
 		end
