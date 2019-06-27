@@ -6,6 +6,7 @@ ACF_Conq.Spawns = ACF_Conq.Spawns or {}
 ACF_Conq.ActiveUsers = ACF_Conq.ActiveUsers or {}
 
 local file = file
+local net = net
 local os = os
 local table = table
 local timer = timer
@@ -104,6 +105,8 @@ local function InitializeUsers()
 	hook.Remove("Initialize", "ACF Conquest User Init")
 end
 
+util.AddNetworkString("ACF Conquest Github Data")
+
 local function OnPlayerInitialSpawn(Player)
 	local UserID = game.SinglePlayer() and util.CRC(Player:Name()) or Player:SteamID()
 
@@ -116,19 +119,24 @@ local function OnPlayerInitialSpawn(Player)
 		print("[ACF Conquest] Registering new user with ID " .. UserID .. ".")
 	end
 
-	Player.ACF_ConqData = ACF_Conq.Users[UserID]
+	Player.ACF_Conq = ACF_Conq.Users[UserID]
 	ACF_Conq.ActiveUsers[Player] = true
+
+	net.Start("ACF Conquest Github Data")
+		net.WriteTable(ACF_Conq.GetLatestCommits())
+		net.WriteString(ACF_Conq.GetVersionStatus())
+	net.Send(Player)
 
 	SaveUserTable()
 end
 
 local function OnPlayerDisconnect(Player)
-	if not Player.ACF_ConqData then return end
+	if not Player.ACF_Conq then return end
 
 	local Date = os.date("%m-%d-%Y %H:%M:%S", os.time())
 
-	Player.ACF_ConqData:SetLastSeen(Date)
-	Player.ACF_ConqData:SetTeam("None")
+	Player.ACF_Conq:SetLastSeen(Date)
+	Player.ACF_Conq:SetTeam("None")
 
 	ACF_Conq.ActiveUsers[Player] = nil
 
@@ -140,12 +148,12 @@ local function OnPlayerDeath(Victim, Inflictor, Attacker)
 	local AttackerPlayer = Attacker:IsPlayer()
 
 	if VictimPlayer then
-		Victim.ACF_ConqData:AddDeath(1)
+		Victim.ACF_Conq:AddDeath(1)
 	end
 
 	if AttackerPlayer then
-		Attacker.ACF_ConqData:AddKill(1)
-		Attacker.ACF_ConqData:AddBalance(100)
+		Attacker.ACF_Conq:AddKill(1)
+		Attacker.ACF_Conq:AddBalance(100)
 	end
 
 	if VictimPlayer or AttackerPlayer then
@@ -155,8 +163,8 @@ end
 
 local function OnNPCKilled(NPC, Attacker)
 	if Attacker:IsPlayer() then
-		Attacker.ACF_ConqData:AddKill(1)
-		Attacker.ACF_ConqData:AddBalance(50)
+		Attacker.ACF_Conq:AddKill(1)
+		Attacker.ACF_Conq:AddBalance(50)
 
 		SaveUserTable()
 	end
@@ -168,8 +176,8 @@ local function OnShutDown()
 	local Date = os.date("%m-%d-%Y %H:%M:%S", os.time())
 
 	for k in pairs(ACF_Conq.ActiveUsers) do
-		k.ACF_ConqData:SetLastSeen(Date)
-		k.ACF_ConqData:SetTeam("None")
+		k.ACF_Conq:SetLastSeen(Date)
+		k.ACF_Conq:SetTeam("None")
 	end
 
 	SaveUserTable(true)

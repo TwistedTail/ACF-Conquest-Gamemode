@@ -20,6 +20,8 @@ local function CreateAccessor(Table, Key, Name, Type)
 end
 
 if CLIENT then
+	local vgui = vgui
+
 	local PanelBase = baseclass.Get("Panel")
 
 	function PanelBase:SetTemporal(Parent)
@@ -43,7 +45,7 @@ if CLIENT then
 			self[Name] = {}
 		end
 
-		function DForm:FormButton(Text, CVar, Vararg)
+		function DForm:AddButton(Text, CVar, Vararg)
 			Text = Text or ""
 			CVar = CVar or ""
 			Vararg = Vararg or ""
@@ -57,7 +59,7 @@ if CLIENT then
 			return Item
 		end
 
-		function DForm:FormCheckBox(Text, CVar)
+		function DForm:AddCheckBox(Text, CVar)
 			Text = Text or ""
 			CVar = CVar or ""
 
@@ -70,7 +72,7 @@ if CLIENT then
 			return Item
 		end
 
-		function DForm:FormLabel(Text)
+		function DForm:AddLabel(Text)
 			Text = Text or ""
 
 			local Item = self:Help(Text)
@@ -82,19 +84,14 @@ if CLIENT then
 			return Item
 		end
 
-		function DForm:FormTitle(Text)
-			Text = Text or ""
-
-			local Item = self:Help(Text)
-			Item:DockMargin(5, 0, 5, 0)
-			Item:SetFont("Trebuchet24")
-
-			self.CreatedItems[Item] = true
+		function DForm:AddTitle(Text)
+			local Item = self:AddLabel(Text)
+			Item:SetFont("GModToolHelp")
 
 			return Item
 		end
 
-		function DForm:FormComboBox()
+		function DForm:AddComboBox()
 			local Item = vgui.Create("DComboBox", self)
 			Item:DockMargin(5, 0, 5, 0)
 			Item:SetFont("DermaDefaultBold")
@@ -108,11 +105,14 @@ if CLIENT then
 			return Item
 		end
 
-		function DForm:FormNumSlider(Text, CVar)
+		function DForm:AddNumSlider(Text, CVar, Min, Max, Decimals)
 			Text = Text or ""
 			CVar = CVar or ""
+			Min = Min or 0
+			Max = Max or 0
+			Decimals = Decimals or 0
 
-			local Item = self:NumSlider(Text, CVar, 0, 0, 0)
+			local Item = self:NumSlider(Text, CVar, Min, Max, Decimals)
 			Item:DockMargin(5, 0, 5, 0)
 
 			self.CreatedItems[Item] = true
@@ -120,9 +120,23 @@ if CLIENT then
 			return Item
 		end
 
-		function DForm:FormTree()
+		function DForm:AddTree()
 			local Item = vgui.Create("DTree", self)
 			Item:DockMargin(5, 0, 5, 0)
+
+			self:AddItem(Item)
+			self.CreatedItems[Item] = true
+
+			return Item
+		end
+
+		function DForm:AddForm(Text)
+			Text = Text or ""
+
+			local Item = vgui.Create("DForm", self)
+			Item:DockMargin(5, 0, 5, 0)
+			Item:SetLabel(Text)
+			Item.CreatedItems = {}
 
 			self:AddItem(Item)
 			self.CreatedItems[Item] = true

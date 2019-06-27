@@ -7,6 +7,7 @@ if SERVER then
 	AddCSLuaFile("acf_conquest/cl_init.lua")
 	AddCSLuaFile("acf_conquest/tool_options.lua")
 
+	include("acf_conquest/git_data.lua")
 	include("acf_conquest/util.lua")
 	include("acf_conquest/users.lua")
 	include("acf_conquest/points.lua")

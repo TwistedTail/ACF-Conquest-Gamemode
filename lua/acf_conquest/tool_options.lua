@@ -1,3 +1,9 @@
+local gui = gui
+local next = next
+local os = os
+local pairs = pairs
+
+
 local CurrentOption
 local OptionsLookup = {}
 local OptionsTable = {}
@@ -43,11 +49,11 @@ local function AddOptionItem(Name, Icon, SuperOnly, Action)
 end
 
 local function WIPText(Panel)
-	local Text = Panel:FormTitle("Work in Progress.")
+	local Text = Panel:AddTitle("Work in Progress.")
 	Text:SetTemporal(Panel)
 
 	local Count = 0
-	local CoolButton = Panel:FormButton("Here, press this button.", "", "")
+	local CoolButton = Panel:AddButton("Here, press this button.")
 	CoolButton:SetTemporal(Panel)
 	CoolButton.DoClickInternal = function()
 		Count = Count + 1
@@ -112,16 +118,16 @@ local function CreateContextPanel(Panel)
 
 	Panel:ClearItems("CreatedItems")
 
-	local Reload = Panel:FormButton("Press to reload menu.", "", "")
-	Reload.DoClick = function()
+	local Reload = Panel:AddButton("Press to reload menu.")
+	Reload.DoClickInternal = function()
 		ACF_Conq.CreateContextPanel(Panel)
 	end
 
-	Panel:FormLabel("Available options:")
+	Panel:AddLabel("Available options:")
 
-	local Options = Panel:FormComboBox()
+	local Options = Panel:AddComboBox()
 
-	local Tree = Panel:FormTree()
+	local Tree = Panel:AddTree()
 	Tree.OnNodeSelected = function(_, Node)
 		if Option == Node then return end
 
@@ -149,26 +155,62 @@ end
 
 -- Filling the tool's menu
 AddOption("About the Addon")
-AddOptionItem("Updates", "icon16/newspaper.png", nil, WIPText)
+AddOptionItem("Updates", "icon16/newspaper.png", nil, function(Panel)
+	local Text = Panel:AddTitle("Latest Updates")
+	Text:SetTemporal(Panel)
+
+	local Status = Panel:AddLabel("Version Status: " .. ACF_Conq.VersionStatus)
+	Status:SetTemporal(Panel)
+
+	if not next(ACF_Conq.Commits) then
+		local NoCommits = Panel:AddLabel("No commits were found.")
+		NoCommits:SetTemporal(Panel)
+
+		return
+	end
+
+	for _, v in pairs(ACF_Conq.Commits) do
+		local Date = os.date("%Y/%m/%d - %H:%M:%S", v.date)
+
+		local Form = Panel:AddForm("Update " .. Date)
+		Form:SetTemporal(Panel)
+		Form:Toggle()
+
+		local Title = Form:AddTitle(v.title)
+		Title:SetTemporal(Panel)
+
+		local Author = Form:AddLabel("Author:\n" .. v.author)
+		Author:SetTemporal(Panel)
+
+		local Message = Form:AddLabel("Message:\n" .. v.message)
+		Message:SetTemporal(Panel)
+
+		local Link = Form:AddButton("View this commit")
+		Link:SetTemporal(Panel)
+		Link.DoClickInternal = function()
+			gui.OpenURL(v.link)
+		end
+	end
+end)
 AddOptionItem("Description", "icon16/information.png", nil, WIPText)
 AddOptionItem("Report a Bug", "icon16/bug.png", nil, function(Panel)
-	local Text = Panel:FormLabel(
+	local Text = Panel:AddLabel(
 				"Found a bug and don't really want to fix it yourself?\n" ..
 				"Leave an issue report on the Github page!")
 	Text:SetTemporal(Panel)
 
-	local GitButton = Panel:FormButton("Report a Bug Now!")
+	local GitButton = Panel:AddButton("Report a Bug Now!")
 	GitButton:SetTemporal(Panel)
 	GitButton.DoClickInternal = function()
 		gui.OpenURL("https://github.com/TwistedTail/ACF-Conquest-Gamemode/issues/new/choose")
 	end
 
-	local Note = Panel:FormLabel(
+	local Note = Panel:AddLabel(
 				"Important: Problems are easier to solve if you know what caused them. " ..
 				"It's highly suggested to provide information about the bug you're reporting.")
 	Note:SetTemporal(Panel)
 
-	local Examples = Panel:FormLabel(
+	local Examples = Panel:AddLabel(
 					"Examples of 'useful information' would be:\n" ..
 					"- What were you doing when it happened?\n" ..
 					"- Was there an error on the console? If so, please provide it.\n" ..
@@ -180,23 +222,23 @@ AddOption("Tutorials")
 
 AddOption("Server Settings", true)
 AddOptionItem("Global Settings", "icon16/world.png", nil, function(Panel)
-	local GMEnable = Panel:FormCheckBox("Enable the gamemode.", "acf_conquest_enable")
+	local GMEnable = Panel:AddCheckBox("Enable the gamemode.", "acf_conquest_enable")
 	GMEnable:SetTemporal(Panel)
 
-	local BotEnable = Panel:FormCheckBox("Enable bot spawning.", "acf_conquest_enable_bots")
+	local BotEnable = Panel:AddCheckBox("Enable bot spawning.", "acf_conquest_enable_bots")
 	BotEnable:SetTemporal(Panel)
 
-	local BotAmount = Panel:FormNumSlider("Bots per team", "acf_conquest_max_bots")
+	local BotAmount = Panel:AddNumSlider("Bots per team", "acf_conquest_max_bots")
 	BotAmount:SetTemporal(Panel)
 	BotAmount:SetTooltip("Defines the maximum amount of bots per team.")
 	BotAmount:SetMax(100)
 
-	local ScoreAmount = Panel:FormNumSlider("Tickets per team", "acf_conquest_max_tickets")
+	local ScoreAmount = Panel:AddNumSlider("Tickets per team", "acf_conquest_max_tickets")
 	ScoreAmount:SetTemporal(Panel)
 	ScoreAmount:SetTooltip("Defines the amount of tickets each team starts with.")
 	ScoreAmount:SetMinMax(100, 2000)
 
-	local MinPlayers = Panel:FormNumSlider("Minimum players", "acf_conquest_min_players")
+	local MinPlayers = Panel:AddNumSlider("Minimum players", "acf_conquest_min_players")
 	MinPlayers:SetTemporal(Panel)
 	MinPlayers:SetTooltip("Defines the minimal amount of players needed to start a game.")
 	MinPlayers:SetMinMax(1, 30)
