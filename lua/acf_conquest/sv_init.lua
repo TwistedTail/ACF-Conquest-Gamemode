@@ -1,14 +1,14 @@
 -- Server init
 
 ACF_Conq.Users = ACF_Conq.Users or {}
-ACF_Conq.Points = ACF_Conq.Points or {}
+ACF_Conq.FlagCount = ACF_Conq.FlagCount or 0
+ACF_Conq.Flags = ACF_Conq.Flags or {}
 ACF_Conq.Spawns = ACF_Conq.Spawns or {}
 ACF_Conq.ActiveUsers = ACF_Conq.ActiveUsers or {}
 
 local file = file
-local net = net
+local hook = hook
 local os = os
-local table = table
 local timer = timer
 local util = util
 
@@ -16,8 +16,10 @@ local DataFolder = "acf_conquest"
 local MapName = game.GetMap()
 local MapFile = DataFolder .. "/mapdata_" .. MapName .. ".txt"
 local UserFile = DataFolder .. "/userdata.txt"
-local QueuedSave = false
-local NextSave = CurTime()
+local QueuedUser = false
+local QueuedMap = false
+local NextUser = CurTime()
+local NextMap = CurTime()
 
 local function CheckFile(Folder, File)
 	if not file.Exists(Folder, "DATA") then
@@ -31,13 +33,13 @@ end
 
 local function SaveUserTable(Forced)
 	if not Forced then
-		if QueuedSave then return end
+		if QueuedUser then return end
 
-		if NextSave > CurTime() then
-			QueuedSave = true
+		if NextUser > CurTime() then
+			QueuedUser = true
 
-			timer.Simple(NextSave - CurTime(), function()
-				QueuedSave = false
+			timer.Simple(NextUser - CurTime(), function()
+				QueuedUser = false
 
 				SaveUserTable()
 			end)
@@ -50,10 +52,10 @@ local function SaveUserTable(Forced)
 
 	CheckFile(DataFolder, UserFile)
 
-	NextSave = CurTime() + 10
+	NextUser = CurTime() + 10
 
 	for _, v in pairs(ACF_Conq.Users) do
-		table.insert(UserData, v:ToTable())
+		UserData[v:GetSteamID()] = v:ToTable()
 	end
 
 	print("[ACF Conquest] Saving user data.")
@@ -61,24 +63,69 @@ local function SaveUserTable(Forced)
 	file.Write(UserFile, util.TableToJSON(UserData, true))
 end
 
-local function InitializeMaps()
+local function SaveMapTable(Forced)
+	if not Forced then
+		if QueuedMap then return end
+
+		if NextMap > CurTime() then
+			QueuedMap = true
+
+			timer.Simple(NextMap - CurTime(), function()
+				QueuedMap = false
+
+				SaveUserTable()
+			end)
+
+			return
+		end
+	end
+
+	local Data = {
+		Spawns = {},
+		Flags = {}
+	}
+
+	CheckFile(DataFolder, MapFile)
+
+	NextMap = CurTime() + 3
+
+	if next(ACF_Conq.Flags) then
+		for _, v in pairs(ACF_Conq.Flags) do
+			Data.Flags[v:GetOrder()] = v:ToTable()
+		end
+	end
+
+	print("[ACF Conquest] Saving map data.")
+
+	file.Write(MapFile, util.TableToJSON(Data, true))
+end
+
+local function InitializeMap()
 	if not CheckFile(DataFolder, MapFile) then
 		print("[ACF Conquest] No data found for the map " .. MapName .. ".")
 	else
 		local MapData = util.JSONToTable(file.Read(MapFile, "DATA"))
 		ACF_Conq.Spawns = MapData.Spawns
-		ACF_Conq.Points = {}
+		ACF_Conq.Flags = {}
 
-		if next(MapData.Points) then
-			for _, v in pairs(MapData.Points) do
-				table.insert(ACF_Conq.Points, ACF_UpdatePointData(v))
+		if next(MapData.Flags) then
+			for _, Flag in pairs(MapData.Flags) do
+				ACF_Conq.CreateFlag(
+					Flag._pos,
+					Flag._ang,
+					Flag._name,
+					Flag._model,
+					Flag._size,
+					Flag._offsetPos,
+					Flag._offsetAng
+				)
 			end
 
-			print("[ACF Conquest] Loaded " .. #ACF_Conq.Points .. " capture point(s).")
+			print("[ACF Conquest] Loaded " .. ACF_Conq.FlagCount .. " flag(s).")
 		end
 
 		if next(ACF_Conq.Spawns) then
-			print("[ACF Conquest] Loaded " .. #ACF_Conq.Spawns .. " custom spawn point(s).")
+			print("[ACF Conquest] Loaded " .. #ACF_Conq.Spawns .. " spawn point(s).")
 		end
 	end
 
@@ -92,40 +139,38 @@ local function InitializeUsers()
 		local UserData = util.JSONToTable(file.Read(UserFile, "DATA"))
 
 		if next(UserData) then
-			for _, v in pairs(UserData) do
-				local User = ACF_UpdateUserData(v)
+			local Count = 0
 
-				ACF_Conq.Users[User:GetSteamID()] = User
+			for k, v in pairs(UserData) do
+				ACF_Conq.Users[k] = ACF_UpdateUserData(v)
+				Count = Count + 1
 			end
 
-			print("[ACF Conquest] Loaded " .. #UserData .. " user profile(s).")
+			print("[ACF Conquest] Loaded " .. Count .. " user profile(s).")
 		end
 	end
 
 	hook.Remove("Initialize", "ACF Conquest User Init")
 end
 
-util.AddNetworkString("ACF Conquest Github Data")
-
 local function OnPlayerInitialSpawn(Player)
-	local UserID = game.SinglePlayer() and util.CRC(Player:Name()) or Player:SteamID()
+	local UserID = Player:SteamID()
+	local Date = os.date("%m-%d-%Y %H:%M:%S", os.time())
 
 	if not ACF_Conq.Users[UserID] then
-		local Date = os.date("%m-%d-%Y %H:%M:%S", os.time())
-		local User = ACF_NewUserData(UserID, 420, Date)
+		local User = ACF_NewUserData(UserID, 420)
 
 		ACF_Conq.Users[UserID] = User
 
 		print("[ACF Conquest] Registering new user with ID " .. UserID .. ".")
 	end
 
-	Player.ACF_Conq = ACF_Conq.Users[UserID]
+	ACF_Conq.Users[UserID]:SetLastSeen(Date)
 	ACF_Conq.ActiveUsers[Player] = true
-
-	net.Start("ACF Conquest Github Data")
-		net.WriteTable(ACF_Conq.GetLatestCommits())
-		net.WriteString(ACF_Conq.GetVersionStatus())
-	net.Send(Player)
+	Player.ACF_Conq = {
+		UserData = ACF_Conq.Users[UserID],
+		Flags = {},
+	}
 
 	SaveUserTable()
 end
@@ -135,8 +180,8 @@ local function OnPlayerDisconnect(Player)
 
 	local Date = os.date("%m-%d-%Y %H:%M:%S", os.time())
 
-	Player.ACF_Conq:SetLastSeen(Date)
-	Player.ACF_Conq:SetTeam("None")
+	Player.ACF_Conq.UserData:SetLastSeen(Date)
+	Player.ACF_Conq.UserData:SetTeam("None")
 
 	ACF_Conq.ActiveUsers[Player] = nil
 
@@ -148,12 +193,12 @@ local function OnPlayerDeath(Victim, Inflictor, Attacker)
 	local AttackerPlayer = Attacker:IsPlayer()
 
 	if VictimPlayer then
-		Victim.ACF_Conq:AddDeath(1)
+		Victim.ACF_Conq.UserData:AddDeath(1)
 	end
 
 	if AttackerPlayer then
-		Attacker.ACF_Conq:AddKill(1)
-		Attacker.ACF_Conq:AddBalance(100)
+		Attacker.ACF_Conq.UserData:AddKill(1)
+		Attacker.ACF_Conq.UserData:AddBalance(100)
 	end
 
 	if VictimPlayer or AttackerPlayer then
@@ -163,8 +208,8 @@ end
 
 local function OnNPCKilled(NPC, Attacker)
 	if Attacker:IsPlayer() then
-		Attacker.ACF_Conq:AddKill(1)
-		Attacker.ACF_Conq:AddBalance(50)
+		Attacker.ACF_Conq.UserData:AddKill(1)
+		Attacker.ACF_Conq.UserData:AddBalance(50)
 
 		SaveUserTable()
 	end
@@ -176,14 +221,15 @@ local function OnShutDown()
 	local Date = os.date("%m-%d-%Y %H:%M:%S", os.time())
 
 	for k in pairs(ACF_Conq.ActiveUsers) do
-		k.ACF_Conq:SetLastSeen(Date)
-		k.ACF_Conq:SetTeam("None")
+		k.ACF_Conq.UserData:SetLastSeen(Date)
+		k.ACF_Conq.UserData:SetTeam("None")
 	end
 
 	SaveUserTable(true)
+	SaveMapTable(true)
 end
 
-hook.Add("Initialize", "ACF Conquest Map Init", InitializeMaps)
+hook.Add("Initialize", "ACF Conquest Map Init", InitializeMap)
 hook.Add("Initialize", "ACF Conquest User Init", InitializeUsers)
 hook.Add("PlayerInitialSpawn", "ACF Conquest Player Initial Spawn", OnPlayerInitialSpawn)
 hook.Add("PlayerDisconnected", "ACF Conquest Player Disconnect", OnPlayerDisconnect)

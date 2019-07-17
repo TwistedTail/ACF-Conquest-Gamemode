@@ -1,52 +1,14 @@
 local gui = gui
+local language = language
+local net = net
 local next = next
 local os = os
 local pairs = pairs
 
-
-local CurrentOption
-local OptionsLookup = {}
-local OptionsTable = {}
-
-local function AddOption(Name, SuperOnly)
-	if not Name then return end
-
-	local Index
-
-	if not OptionsLookup[Name] then
-		Index = #OptionsTable + 1
-		OptionsLookup[Name] = { Index = Index }
-	else
-		Index = OptionsLookup[Name].Index
-	end
-
-	CurrentOption = Name
-
-	OptionsTable[Index] = {
-		name = Name,
-		superonly = SuperOnly,
-		data = {},
-	}
-end
-
-local function AddOptionItem(Name, Icon, SuperOnly, Action)
-	if not CurrentOption then return end
-	if not OptionsLookup[CurrentOption] then return end
-	if not Name then return end
-
-	local Option = OptionsLookup[CurrentOption]
-	local Index = Option.Index
-	local Data = OptionsTable[Index].data
-	local DataIndex = Option[Name] or #Data + 1
-
-	Option[Name] = DataIndex
-	Data[DataIndex] = {
-		name = Name,
-		icon = Icon,
-		superonly = SuperOnly,
-		action = Action,
-	}
-end
+local AddOption = ACF_Conq.AddOption
+local AddOptionItem = ACF_Conq.AddOptionItem
+local GenerateMenu = ACF_Conq.GenerateMenu
+local GenerateTree = ACF_Conq.GenerateTree
 
 local function WIPText(Panel)
 	local Text = Panel:AddTitle("Work in Progress.")
@@ -60,56 +22,6 @@ local function WIPText(Panel)
 
 		CoolButton:SetText("Pressed " .. Count .. " time" .. (Count ~= 1 and "s." or "."))
 	end
-end
-
-local function CanUseItem(Item, IsSuper)
-	if not Item then return false end
-	if not Item.superonly then return true end
-
-	return IsSuper and Item.superonly
-end
-
-local function GenerateMenu(ComboBox)
-	if not next(OptionsTable) then return end
-
-	local IsSuper = LocalPlayer():IsSuperAdmin()
-
-	for _, v in pairs(OptionsTable) do
-		if CanUseItem(v, IsSuper) then
-			ComboBox:AddChoice(v.name, v.data)
-		end
-	end
-
-	ComboBox:ChooseOptionID(1)
-end
-
-local function GenerateTree(Tree, Category)
-	local Count = 0.5
-
-	Tree:Clear()
-	Tree:SelectNone()
-
-	if next(Category) then
-		local IsSuper = LocalPlayer():IsSuperAdmin()
-		local First
-
-		for _, v in pairs(Category) do
-			if CanUseItem(v, IsSuper) then
-				local Node = Tree:AddNode(v.name, v.icon)
-
-				Node.Action = v.action
-
-				Count = Count + 1
-
-				if not First then
-					First = true
-					Tree:SetSelectedItem(Node)
-				end
-			end
-		end
-	end
-
-	Tree:SetHeight(Tree:GetLineHeight() * Count)
 end
 
 local function CreateContextPanel(Panel)
@@ -152,6 +64,18 @@ local function CreateContextPanel(Panel)
 
 	GenerateMenu(Options)
 end
+
+language.Add("Tool.acf_conquest_menu.name", "ACF Conquest Menu")
+language.Add("Tool.acf_conquest_menu.desc", "Does nothing.")
+language.Add("Tool.acf_conquest_menu.0", "Select an option on the context menu.")
+
+net.Receive("ACF Conquest Server Data", function(_, Player)
+	if IsValid(Player) then return end
+
+	ACF_Conq.Commits = net.ReadTable()
+	ACF_Conq.VersionStatus = net.ReadString()
+	ACF_Conq.Flags = net.ReadTable()
+end)
 
 -- Filling the tool's menu
 AddOption("About the Addon")
@@ -222,43 +146,54 @@ AddOption("Tutorials")
 
 AddOption("Server Settings", true)
 AddOptionItem("Global Settings", "icon16/world.png", nil, function(Panel)
-	local GMEnable = Panel:AddCheckBox("Enable the gamemode.", "acf_conquest_enable")
+	local GMTitle = Panel:AddTitle("Gamemode")
+	GMTitle:SetTemporal(Panel)
+
+	local GMEnable = Panel:AddCheckBox("Enable the gamemode.")
+	GMEnable:SetNWConVar("acf_conquest_enable")
 	GMEnable:SetTemporal(Panel)
 
-	local BotEnable = Panel:AddCheckBox("Enable bot spawning.", "acf_conquest_enable_bots")
+	local ScoreAmount = Panel:AddNumSlider("Initial tickets", 100, 2000)
+	ScoreAmount:SetNWConVar("acf_conquest_max_tickets")
+	ScoreAmount:SetTemporal(Panel)
+
+	local ScoreHelp = Panel:AddHelp("Amount of tickets each team starts with.")
+	ScoreHelp:SetTemporal(Panel)
+
+	local MinPlayers = Panel:AddNumSlider("Min. players", 1, 30)
+	MinPlayers:SetNWConVar("acf_conquest_min_players")
+	MinPlayers:SetTemporal(Panel)
+
+	local MinPlayersHelp = Panel:AddHelp("Minimum amount of players per team needed to start a match.")
+	MinPlayersHelp:SetTemporal(Panel)
+
+	local BotTitle = Panel:AddTitle("Bots")
+	BotTitle:SetTemporal(Panel)
+
+	local BotEnable = Panel:AddCheckBox("Enable bot spawning.")
+	BotEnable:SetNWConVar("acf_conquest_enable_bots")
 	BotEnable:SetTemporal(Panel)
 
-	local BotAmount = Panel:AddNumSlider("Bots per team", "acf_conquest_max_bots")
+	local BotAmount = Panel:AddNumSlider("Bots per team", 0, 100)
+	BotAmount:SetNWConVar("acf_conquest_max_bots")
 	BotAmount:SetTemporal(Panel)
-	BotAmount:SetTooltip("Defines the maximum amount of bots per team.")
-	BotAmount:SetMax(100)
 
-	local ScoreAmount = Panel:AddNumSlider("Tickets per team", "acf_conquest_max_tickets")
-	ScoreAmount:SetTemporal(Panel)
-	ScoreAmount:SetTooltip("Defines the amount of tickets each team starts with.")
-	ScoreAmount:SetMinMax(100, 2000)
-
-	local MinPlayers = Panel:AddNumSlider("Minimum players", "acf_conquest_min_players")
-	MinPlayers:SetTemporal(Panel)
-	MinPlayers:SetTooltip("Defines the minimal amount of players needed to start a game.")
-	MinPlayers:SetMinMax(1, 30)
+	local BotAmountHelp = Panel:AddHelp("Maximum amount of bots per team.")
+	BotAmountHelp:SetTemporal(Panel)
 end)
 AddOptionItem("Map Settings", "icon16/map.png", nil, WIPText)
 
-AddOption("Team Settings", true)
+AddOption("Teams", true)
 AddOptionItem("View Teams", "icon16/eye.png", nil, WIPText)
 AddOptionItem("Edit Teams", "icon16/pencil.png", nil, WIPText)
 
-AddOption("Capture Point Settings", true)
+AddOption("Capture Points", true)
 AddOptionItem("View Capture Points", "icon16/eye.png", nil, WIPText)
 AddOptionItem("Edit Capture Points", "icon16/pencil.png", nil, WIPText)
 AddOptionItem("Order Capture Points", "icon16/arrow_switch.png", nil, WIPText)
 
-AddOption("Spawn Point Settings", true)
+AddOption("Spawn Points", true)
 AddOptionItem("View Spawn Points", "icon16/eye.png", nil, WIPText)
 AddOptionItem("Edit Spawn Points", "icon16/pencil.png", nil, WIPText)
 
--- Globalizing useful functions
 ACF_Conq.CreateContextPanel = CreateContextPanel
-ACF_Conq.AddOption = AddOption
-ACF_Conq.AddOptionItem = AddOptionItem
