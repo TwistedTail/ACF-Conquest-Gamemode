@@ -17,8 +17,8 @@ end
 
 local function OnPlayerInitialSpawn(Player)
 	net.Start("ACF Conquest Server Data")
-		net.WriteTable(ACF_Conq.GetLatestCommits())
 		net.WriteString(ACF_Conq.GetVersionStatus())
+		net.WriteTable(ACF_Conq.GetLatestCommits())
 		net.WriteTable(ACF_Conq.Flags)
 	net.Send(Player)
 end

@@ -56,8 +56,6 @@ local function GetLocalVersion()
 	return LocalVersion, LocalDate
 end
 
-GetLocalVersion() -- We're just gonna save our local version instantly
-
 local function GitDateToEpoch(GitDate)
 	local Date, Time = unpack(string.Explode("T", GitDate))
 	local Year, Month, Day = unpack(string.Explode("-", Date))
@@ -143,8 +141,6 @@ local function GetLatestCommits()
 
 	return Commits
 end
-
-GetLatestCommits() -- We're also going to get the latest commits instantly
 
 local function GetRepoVersion()
 	if RepoVersion then return RepoVersion, RepoDate end

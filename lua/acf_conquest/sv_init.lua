@@ -100,6 +100,16 @@ local function SaveMapTable(Forced)
 	file.Write(MapFile, util.TableToJSON(Data, true))
 end
 
+local function InitializeVersion()
+	local Version = ACF_Conq.GetLocalVersion()
+
+	print("[ACF Conquest] Currently running on version " .. Version)
+
+	timer.Simple(15, ACF_Conq.GetLatestCommits)
+
+	hook.Remove("Initialize", "ACF Conquest Version Init")
+end
+
 local function InitializeMap()
 	if not CheckFile(DataFolder, MapFile) then
 		print("[ACF Conquest] No data found for the map " .. MapName .. ".")
@@ -175,19 +185,6 @@ local function OnPlayerInitialSpawn(Player)
 	SaveUserTable()
 end
 
-local function OnPlayerDisconnect(Player)
-	if not Player.ACF_Conq then return end
-
-	local Date = os.date("%m-%d-%Y %H:%M:%S", os.time())
-
-	Player.ACF_Conq.UserData:SetLastSeen(Date)
-	Player.ACF_Conq.UserData:SetTeam("None")
-
-	ACF_Conq.ActiveUsers[Player] = nil
-
-	SaveUserTable()
-end
-
 local function OnPlayerDeath(Victim, Inflictor, Attacker)
 	local VictimPlayer = Victim:IsPlayer()
 	local AttackerPlayer = Attacker:IsPlayer()
@@ -215,24 +212,42 @@ local function OnNPCKilled(NPC, Attacker)
 	end
 end
 
-local function OnShutDown()
-	if not next(ACF_Conq.ActiveUsers) then return end
+local function OnPlayerDisconnect(Player)
+	if not Player.ACF_Conq then return end
 
 	local Date = os.date("%m-%d-%Y %H:%M:%S", os.time())
 
-	for k in pairs(ACF_Conq.ActiveUsers) do
-		k.ACF_Conq.UserData:SetLastSeen(Date)
-		k.ACF_Conq.UserData:SetTeam("None")
+	Player.ACF_Conq.UserData:SetLastSeen(Date)
+	Player.ACF_Conq.UserData:SetTeam("None")
+
+	ACF_Conq.ActiveUsers[Player] = nil
+
+	SaveUserTable()
+end
+
+local function OnShutDown()
+	if next(ACF_Conq.ActiveUsers) then
+		local Date = os.date("%m-%d-%Y %H:%M:%S", os.time())
+
+		for k in pairs(ACF_Conq.ActiveUsers) do
+			k.ACF_Conq.UserData:SetLastSeen(Date)
+			k.ACF_Conq.UserData:SetTeam("None")
+		end
+
+		SaveUserTable(true)
 	end
 
-	SaveUserTable(true)
 	SaveMapTable(true)
 end
 
-hook.Add("Initialize", "ACF Conquest Map Init", InitializeMap)
+hook.Add("Initialize", "ACF Conquest Version Init", InitializeVersion)
 hook.Add("Initialize", "ACF Conquest User Init", InitializeUsers)
+hook.Add("InitPostEntity", "ACF Conquest Map Init", InitializeMap)
 hook.Add("PlayerInitialSpawn", "ACF Conquest Player Initial Spawn", OnPlayerInitialSpawn)
-hook.Add("PlayerDisconnected", "ACF Conquest Player Disconnect", OnPlayerDisconnect)
 hook.Add("PlayerDeath", "ACF Conquest Player Death", OnPlayerDeath)
 hook.Add("OnNPCKilled", "ACF Conquest NPC Death", OnNPCKilled)
+hook.Add("PlayerDisconnected", "ACF Conquest Player Disconnect", OnPlayerDisconnect)
 hook.Add("ShutDown", "ACF Conquest Server Shutdown", OnShutDown)
+
+ACF_Conq.SaveUserTable = SaveUserTable
+ACF_Conq.SaveMapTable = SaveMapTable

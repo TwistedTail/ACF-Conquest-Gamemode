@@ -72,8 +72,8 @@ language.Add("Tool.acf_conquest_menu.0", "Select an option on the context menu."
 net.Receive("ACF Conquest Server Data", function(_, Player)
 	if IsValid(Player) then return end
 
-	ACF_Conq.Commits = net.ReadTable()
 	ACF_Conq.VersionStatus = net.ReadString()
+	ACF_Conq.Commits = net.ReadTable()
 	ACF_Conq.Flags = net.ReadTable()
 end)
 

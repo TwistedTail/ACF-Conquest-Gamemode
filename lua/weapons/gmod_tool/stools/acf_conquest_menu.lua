@@ -12,7 +12,10 @@ if SERVER then
 		local Name = "Test"
 		local Model = "models/props_c17/FurnitureToilet001a.mdl"
 
+		if ACF_Conq.Flags[Name] then return false end
+
 		ACF_Conq.CreateFlag(Pos, Ang, Name, Model, 255, Vector(0, 0, 50))
+		ACF_Conq.SaveMapTable()
 
 		return true
 	end
